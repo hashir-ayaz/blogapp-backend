@@ -1,23 +1,25 @@
 # routes.py
-from flask import render_template, redirect, url_for, request, flash
+from flask import render_template, redirect, url_for, request, jsonify
 from app import app, db
 from models import User
 
 
 @app.route("/register", methods=["POST"])
 def register():
+    data = request.get_json()
     if request.method == "POST":
-        username = request.form["username"]
-        email = request.form["email"]
-        password = request.form["password"]
+        print(request)
+        username = data["username"]
+        email = data["email"]
+        password = data["password"]
 
         # Check if user exists
         existing_user = User.query.filter(
             (User.username == username) | (User.email == email)
         ).first()
         if existing_user:
-            flash("Username or email already exists.")
-            return redirect(url_for("register"))
+            print("Username or email already exists.")
+            return jsonify({"message": "Username or email already exists."}), 400
 
         # Create new user
         new_user = User(username=username, email=email)
@@ -26,31 +28,39 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        flash("Registration successful!")
-        return redirect(url_for("login"))
+        # Return the newly created user
+        return (
+            jsonify(
+                {
+                    "id": new_user.id,
+                    "username": new_user.username,
+                    "email": new_user.email,
+                }
+            ),
+            201,
+        )
+    return
 
-    return render_template("register.html")
 
-
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["POST"])
 def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+    data = request.get_json()
 
-        user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
-            # Implement session handling here
-            flash("Login successful!")
-            return redirect(url_for("dashboard"))
-        else:
-            flash("Invalid email or password.")
-            return redirect(url_for("login"))
+    email = data["email"]
+    password = data["password"]
 
-    return render_template("login.html")
+    user = User.query.filter_by(email=email).first()
+    if user and user.check_password(password):
+
+        # Implement session handling here
+        print("Login Successful!")
+        return jsonify({"message": "Login Successful!"}), 200
+    else:
+        print("Invalid email or password.")
+        return jsonify({"message": "Invalid email or password."}), 401
 
 
-@app.route("/dashboard")
-def dashboard():
-    # Placeholder for user dashboard
-    return "Welcome to your dashboard!"
+@app.route("/users")
+def get_users():
+    users = User.query.all()
+    return users
