@@ -2,7 +2,7 @@
 from flask import render_template, redirect, url_for, request, jsonify, Blueprint
 from app import db
 from app.models.user import User
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required
 
 user_bp = Blueprint("user_bp", __name__)
 
@@ -88,6 +88,7 @@ def login():
         return jsonify({"message": "Invalid email or password."}), 401
 
 
+@jwt_required
 @user_bp.route("/users")
 def get_users():
     users = User.query.all()
