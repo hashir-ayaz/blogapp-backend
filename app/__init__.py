@@ -23,7 +23,9 @@ def create_app():
 
     # Import and register blueprints after app is created
     from app.routes.user_routes import user_bp
+    from app.routes.post_routes import post_bp
 
     app.register_blueprint(user_bp, url_prefix="/api/user")
+    app.register_blueprint(post_bp, url_prefix="/api/post")
 
     return app
