@@ -1,10 +1,18 @@
-# routes.py
-from flask import render_template, redirect, url_for, request, jsonify
-from app import app, db
-from models import User
+# user_routes.py
+from flask import render_template, redirect, url_for, request, jsonify, Blueprint
+from app import db
+from app.models.user import User
+from flask_jwt_extended import create_access_token
+
+user_bp = Blueprint("user_bp", __name__)
 
 
-@app.route("/register", methods=["POST"])
+@user_bp.route("/hello", methods=["GET"])
+def hello():
+    return "Hello, World!"
+
+
+@user_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
     if request.method == "POST":
@@ -22,19 +30,24 @@ def register():
             return jsonify({"message": "Username or email already exists."}), 400
 
         # Create new user
-        new_user = User(username=username, email=email)
+        new_user = User(username=username, email=email, password=password)
         new_user.set_password(password)
 
         db.session.add(new_user)
         db.session.commit()
 
+        access_token = create_access_token(identity=new_user.id)
         # Return the newly created user
         return (
             jsonify(
                 {
-                    "id": new_user.id,
-                    "username": new_user.username,
-                    "email": new_user.email,
+                    "message": "User created successfully!",
+                    "access_token": access_token,
+                    "user": {
+                        "id": new_user.id,
+                        "username": new_user.username,
+                        "email": new_user.email,
+                    },
                 }
             ),
             201,
@@ -42,7 +55,7 @@ def register():
     return
 
 
-@app.route("/login", methods=["POST"])
+@user_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
 
@@ -54,13 +67,28 @@ def login():
 
         # Implement session handling here
         print("Login Successful!")
-        return jsonify({"message": "Login Successful!"}), 200
+        access_token = create_access_token(identity=user.id)
+
+        return (
+            jsonify(
+                {
+                    "message": "Login Successful!",
+                    "access_token": access_token,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                    },
+                }
+            ),
+            200,
+        )
     else:
         print("Invalid email or password.")
         return jsonify({"message": "Invalid email or password."}), 401
 
 
-@app.route("/users")
+@user_bp.route("/users")
 def get_users():
     users = User.query.all()
     return users

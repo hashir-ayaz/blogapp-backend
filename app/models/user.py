@@ -9,12 +9,22 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
+    full_name = db.Column(db.String(150), nullable=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
+    bio = db.Column(db.String(150), nullable=True)
     password_hash = db.Column(db.String(128), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+    followers = db.Column(db.Integer, default=0)
+    following = db.Column(db.Integer, default=0)
+    profile_image = db.Column(db.String(150), nullable=True)
+
+    def __init__(self, username, email, password):
+        self.username = username
+        self.email = email
+        self.set_password(password)
 
     def __repr__(self):
         return f"<User {self.username} {self.email} {self.created_at}>"
