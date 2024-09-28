@@ -20,6 +20,10 @@ class User(db.Model):
     followers = db.Column(db.Integer, default=0)
     following = db.Column(db.Integer, default=0)
     profile_image = db.Column(db.String(150), nullable=True)
+    batch = db.Column(
+        db.String(10), nullable=True
+    )  # make this enum (current year - current year - 7)
+    department = db.Column(db.String(150), nullable=True)  # make this enum
 
     def __init__(self, username, email, password):
         self.username = username
@@ -27,7 +31,7 @@ class User(db.Model):
         self.set_password(password)
 
     def __repr__(self):
-        return f"<User {self.username} {self.email} {self.created_at}>"
+        return f"<User {self.username}> {self.email} {self.created_at} {self.updated_at} {self.followers} {self.following} {self.profile_image} {self.batch} {self.department}"
 
     # Password handling
     def set_password(self, password):
