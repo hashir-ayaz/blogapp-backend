@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from app import db
 
+from app.models.association_tables import post_tag
+
 
 class StatusOfPost(Enum):
     PUBLISHED = "PUBLISHED"
@@ -23,6 +25,10 @@ class Post(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
     likes = db.Column(db.Integer, default=0)
+
+    tags = db.relationship(
+        "Tag", secondary=post_tag, backref=db.backref("posts", lazy="dynamic")
+    )
 
     def __repr__(self):
         return f"<Post {self.title}>"

@@ -21,6 +21,8 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
 
+    from app.models import post, tag, user  # Ensure both models are imported
+
     # Import and register blueprints after app is created
     from app.routes.user_routes import user_bp
     from app.routes.post_routes import post_bp
